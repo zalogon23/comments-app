@@ -1,22 +1,48 @@
+const options = {
+  host: "localhost",
+  user: "root",
+  password: "maricuchaston",
+  database: "app-db"
+};
 const express = require("express");
 const app = express();
+const mysqlPromise = require("mysql2/promise");
 const mysql = require("mysql2");
+const promiseAdapter = require("express-mysql2-session-promise-adapter");
+const connection = mysqlPromise.createConnection(options);
+const db = mysql.createConnection(options);
 const PORT = null ?? 8000;
+const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
+const sessionStore = new MySQLStore({}, promiseAdapter.default(connection));
 
 app.use(express.static(`${__dirname}/public`));
+app.use(session({ 
+  secret: "algobienpinchelocoyquemao",
+  resave: false,
+  saveUninitialized: false,
+  store: sessionStore
+}))
 app.use(express.json());
 
 
 //PROFILE
 
-app.post("/profile", async (req, res) => {
-  const { id } = req.body;
+app.get("/profile", async (req, res) => {
+  const id = req.session?.userID;
+  if(!id){
+    res.send({message: "There is no session for show a profile"})
+  }
   const result = await getUserData(id);
   res.send(result);
 })
 
 app.put("/profile/info", async (req, res) => {
-  const { id, info } = req.body;
+  const id = req.session?.userID;
+  if(!id){
+    res.send({message: "There is no session for updating this profile info"})
+  }
+  const { info } = req.body;
   const result = await updateUserInfo(id, info);
   res.send(result);
 })
@@ -24,20 +50,31 @@ app.put("/profile/info", async (req, res) => {
 //COMMENTS
 
 app.post("/comment", async (req, res) => {
-  const result = await uploadCommentToDB(req.body);
+  const id = req.session?.userID;
+  if(!id){
+    res.send({message: "There is no session for making a comment"})
+  }
+  const result = await uploadCommentToDB(req.body, id);
   res.send(result);
 })
 
 app.put("/comment", async (req, res) => {
-  const result = await updateCommentToDB(req.body);
+  const id = req.session?.userID;
+  if(!id){
+    res.send({message: "There is no session for updating the comment"})
+  }
+  const result = await updateCommentToDB(req.body, id);
   res.send(result);
 })
 
 //FRIENDS
 
 //-------SHOW
-app.post("/friends", async (req, res) => {
-  const userID = req.body.id;
+app.get("/friends", async (req, res) => {
+  const userID = req.session?.userID;
+  if(!userID){
+    res.send({message: "There is no session for show friends"})
+  }
   let [{ friends }] = await getFriendIDs(userID);
   friends = JSON.parse(friends);
   let friendsData = [];
@@ -53,8 +90,12 @@ app.post("/friends", async (req, res) => {
 //-------ADD
 
 app.put("/friends/toggle", async (req, res) => {
+  const userID = req.session?.userID;
+  if(!userID){
+    res.send({message: "There is no session for toggling friend"})
+  }
 
-  const { userID, friendID } = req.body;
+  const { friendID } = req.body;
 
   const result = await toggleFriend(userID, friendID);
 
@@ -80,13 +121,18 @@ app.get("/topics/:id", async (req, res) => {
 })
 
 app.post("/topics/comment", async (req, res) => {
+  //GET children comment of a COMMENT
   const { topic, parent } = req.body;
   const result = await getChildCommentsOf(topic, parent);
   res.send(result);
 })
 
 app.put("/topics/favorite", async (req, res) => {
-  const { id, topic } = req.body;
+  const id = req.session?.userID;
+  if(!id){
+    res.send({message: "There is no session for un/make this topic your favorite"})
+  }
+  const { topic } = req.body;
   let result;
   
   try{
@@ -100,6 +146,12 @@ app.put("/topics/favorite", async (req, res) => {
 //LOGIN POST
 
 app.post("/login", async (req, res) => {
+  const id = req.session?.userID;
+  if(id){
+    res.send({message: "You are already logged in"})
+    return;
+  }
+
   const userData = req.body;
 
   if (userData.username.length < 5) {
@@ -125,8 +177,23 @@ app.post("/login", async (req, res) => {
   }
 
   const userDataSecure = { ...userDataRaw, password: "que miras gato de mierda, esto fue escrito por el team de seguridad" };
-  console.log(userDataSecure);
+  req.session.userID = userDataSecure.id;
   res.send(JSON.stringify({ problem: false, message: "The user logged in succesfully", userdata: userDataSecure }));
+})
+
+//LOGOUT
+
+app.post("/logout", (req, res) => {
+  const id = req.session?.userID;
+  if(!id){
+    res.send({message: "There is no session for log out"})
+  }
+
+  console.log
+
+  req.session.destroy();
+  res.clearCookie("connect.sid");
+  res.send("You logged out")
 })
 
 //REGISTER POST
@@ -161,10 +228,10 @@ app.post("/register/sign", async (req, res) => {
 //INDEX GET -------------------------------------------------------------
 
 app.get("*", (req, res) => {
-  res.sendFile(`${__dirname}/public/index.html`),
+  res.sendFile(`${__dirname}/public/index.html`,
     err => {
-      console.log("There was an error sending the site");
-    };
+      if(err) console.log("There was an error sending the site");
+  });
 });
 
 //APP LISTEN -------------------------------------------------------------
@@ -176,12 +243,6 @@ app.listen(PORT, () => {
 
 //DB FUNCTIONS
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "maricuchaston",
-  database: "app-db"
-});
 
 //-------------LOG--------
 function registerUserOnDB({ username, password }) {
@@ -208,7 +269,6 @@ function isUsernameAlreadyOnDB({ username }) {
 function isUsernamePasswordMatching({ username, password }) {
   return new Promise((res, rej) => {
     db.query(`SELECT * FROM users WHERE username="${username}" AND password="${password}"`, (err, result) => {
-      console.log(result);
       res(result);
     });
   })
@@ -258,7 +318,6 @@ function toggleFavoriteTopic(userID, topic) {
         favorite_topics.push(topic);
       }
         
-      console.log(`UPDATE users SET favorite_topics="${JSON.stringify(favorite_topics)}" WHERE id=${userID}`);
       db.query(`UPDATE users SET favorite_topics="${JSON.stringify(favorite_topics)}" WHERE id=${userID}`, (err, result) => {
         if (err) {
           rej("Couldnt update the favorite topics after modifying it");
@@ -320,7 +379,6 @@ function toggleFriend(userID, friendID) {
       let [{ friends }] = result;
       friends = JSON.parse(friends);
       const alreadyFriends = friends.includes(friendID);
-      console.log(`They are already friend? ${alreadyFriends}`);
 
       if (alreadyFriends) {
         friends.splice(friends.indexOf(friendID), 1);
@@ -348,7 +406,7 @@ function toggleFriend(userID, friendID) {
 
 //COMMENTS
 
-function uploadCommentToDB({ content, author, parent, topic }) {
+function uploadCommentToDB({ content, parent, topic }, author) {
   return new Promise((res, rej) => {
     db.query(`INSERT INTO comments (content, author, parent, topic) VALUES("${content}", ${author}, ${parent}, ${topic})`, (err, result) => {
       if (err) {
@@ -360,7 +418,7 @@ function uploadCommentToDB({ content, author, parent, topic }) {
   })
 }
 
-function updateCommentToDB({ id, content }) {
+function updateCommentToDB({ content }, id) {
   return new Promise((res, rej) => {
     db.query(`UPDATE comments SET content="${content}" WHERE id=${id}`, (err, result) => {
       if (err) {
