@@ -16,31 +16,38 @@ const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const sessionStore = new MySQLStore({}, promiseAdapter.default(connection));
 
-app.use(express.static(`${__dirname}/public`));
-app.use(session({ 
+app.use(express.static(`${__dirname}/build`));
+app.use(session({
   secret: "algobienpinchelocoyquemao",
   resave: false,
   saveUninitialized: false,
-  store: sessionStore
+  store: sessionStore,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
 }))
 app.use(express.json());
 
 
 //PROFILE
 
-app.get("/profile", async (req, res) => {
+app.post("/profile", async (req, res) => {
   const id = req.session?.userID;
-  if(!id){
-    res.send({message: "There is no session for show a profile"})
+  if (!id) {
+    res.send({ message: "There is no session for show a profile" })
   }
-  const result = await getUserData(id);
-  res.send(result);
+  try {
+    const result = await getUserData(id);
+    res.send(result);
+  } catch (err) {
+    if (err) console.log(err);
+  }
 })
 
 app.put("/profile/info", async (req, res) => {
   const id = req.session?.userID;
-  if(!id){
-    res.send({message: "There is no session for updating this profile info"})
+  if (!id) {
+    res.send({ message: "There is no session for updating this profile info" })
   }
   const { info } = req.body;
   const result = await updateUserInfo(id, info);
@@ -49,19 +56,19 @@ app.put("/profile/info", async (req, res) => {
 
 //COMMENTS
 
-app.post("/comment", async (req, res) => {
+app.post("/topics/comment/add", async (req, res) => {
   const id = req.session?.userID;
-  if(!id){
-    res.send({message: "There is no session for making a comment"})
+  if (!id) {
+    res.send({ message: "There is no session for making a comment" })
   }
   const result = await uploadCommentToDB(req.body, id);
   res.send(result);
 })
 
-app.put("/comment", async (req, res) => {
+app.put("/topics/comment/edit", async (req, res) => {
   const id = req.session?.userID;
-  if(!id){
-    res.send({message: "There is no session for updating the comment"})
+  if (!id) {
+    res.send({ message: "There is no session for updating the comment" })
   }
   const result = await updateCommentToDB(req.body, id);
   res.send(result);
@@ -70,10 +77,10 @@ app.put("/comment", async (req, res) => {
 //FRIENDS
 
 //-------SHOW
-app.get("/friends", async (req, res) => {
+app.post("/friends/all", async (req, res) => {
   const userID = req.session?.userID;
-  if(!userID){
-    res.send({message: "There is no session for show friends"})
+  if (!userID) {
+    res.send({ message: "There is no session for show friends" })
   }
   let [{ friends }] = await getFriendIDs(userID);
   friends = JSON.parse(friends);
@@ -91,8 +98,8 @@ app.get("/friends", async (req, res) => {
 
 app.put("/friends/toggle", async (req, res) => {
   const userID = req.session?.userID;
-  if(!userID){
-    res.send({message: "There is no session for toggling friend"})
+  if (!userID) {
+    res.send({ message: "There is no session for toggling friend" })
   }
 
   const { friendID } = req.body;
@@ -120,7 +127,7 @@ app.get("/topics/:id", async (req, res) => {
   res.send({ topic: topicData, comments: mainComments ?? [] });
 })
 
-app.post("/topics/comment", async (req, res) => {
+app.post("/topics/comments", async (req, res) => {
   //GET children comment of a COMMENT
   const { topic, parent } = req.body;
   const result = await getChildCommentsOf(topic, parent);
@@ -129,26 +136,26 @@ app.post("/topics/comment", async (req, res) => {
 
 app.put("/topics/favorite", async (req, res) => {
   const id = req.session?.userID;
-  if(!id){
-    res.send({message: "There is no session for un/make this topic your favorite"})
+  if (!id) {
+    res.send({ message: "There is no session for un/make this topic your favorite" })
   }
   const { topic } = req.body;
   let result;
-  
-  try{
+
+  try {
     result = await toggleFavoriteTopic(id, topic);
-  }catch(err){
+  } catch (err) {
     console.log(err);
   }
   res.send(result);
 })
 
-//LOGIN POST
+//LOGIN
 
 app.post("/login", async (req, res) => {
   const id = req.session?.userID;
-  if(id){
-    res.send({message: "You are already logged in"})
+  if (id) {
+    res.send({ message: "You are already logged in" })
     return;
   }
 
@@ -158,35 +165,39 @@ app.post("/login", async (req, res) => {
     res.send(JSON.stringify({ problem: "username", message: "The username doesnt exist" }));
     return;
   }
+  try {
+    const usernameExist = await isUsernameAlreadyOnDB(userData);
 
-  if (userData.password.length < 5) {
-    res.send(JSON.stringify({ problem: "password", message: "The password doesnt exist" }));
-    return;
+    if (!usernameExist) {
+      res.send(JSON.stringify({ problem: "username", message: "The username doesnt exist" }));
+      return;
+    }
+  } catch (err) {
+    if (err) console.log("Error with the username")
   }
 
-  const usernameExist = await isUsernameAlreadyOnDB(userData);
-  if (!usernameExist) {
-    res.send(JSON.stringify({ problem: "username", message: "The username doesnt exist" }));
-    return;
-  }
+  try {
+    const [userDataRaw] = await isUsernamePasswordMatching(userData);
+    if (!userDataRaw) {
+      res.send(JSON.stringify({ problem: "password", message: "The password is wrong" }));
+      return;
+    }
 
-  const [userDataRaw] = await isUsernamePasswordMatching(userData);
-  if (!userDataRaw) {
-    res.send(JSON.stringify({ problem: "password", message: "The password is wrong" }));
-    return;
-  }
+    const userDataSecure = { ...userDataRaw, password: "que miras gato de mierda, esto fue escrito por el team de seguridad" };
+    req.session.userID = userDataSecure.id;
+    res.send(JSON.stringify({ problem: false, message: "The user logged in succesfully", userdata: userDataSecure }));
 
-  const userDataSecure = { ...userDataRaw, password: "que miras gato de mierda, esto fue escrito por el team de seguridad" };
-  req.session.userID = userDataSecure.id;
-  res.send(JSON.stringify({ problem: false, message: "The user logged in succesfully", userdata: userDataSecure }));
+  } catch (err) {
+    if (err) console.log("Problem matching the password")
+  }
 })
 
 //LOGOUT
 
 app.post("/logout", (req, res) => {
   const id = req.session?.userID;
-  if(!id){
-    res.send({message: "There is no session for log out"})
+  if (!id) {
+    res.send({ message: "There is no session for log out" })
   }
 
   console.log
@@ -196,10 +207,10 @@ app.post("/logout", (req, res) => {
   res.send("You logged out")
 })
 
-//REGISTER POST
+//REGISTER
 
-app.post("/register/sign", async (req, res) => {
-  const userData = req.body;
+app.post("/register", async (req, res) => {
+  let userData = req.body;
   if (userData.username.length < 5) {
     res.send(JSON.stringify({ problem: "username", message: "The username is too short (min: 5 characters)" }));
     return;
@@ -211,7 +222,7 @@ app.post("/register/sign", async (req, res) => {
     return;
   }
   if (userData.password.length < 5) {
-    res.send(JSON.stringify({ problem: "password", message: "Error: You need to write a longer password... (min: 5 characters)" }));
+    res.send(JSON.stringify({ problem: "password", message: "The password is too short (min: 5 characters)" }));
     return;
   }
   try {
@@ -228,10 +239,10 @@ app.post("/register/sign", async (req, res) => {
 //INDEX GET -------------------------------------------------------------
 
 app.get("*", (req, res) => {
-  res.sendFile(`${__dirname}/public/index.html`,
+  res.sendFile(`${__dirname}/build/index.html`,
     err => {
-      if(err) console.log("There was an error sending the site");
-  });
+      if (err) console.log("There was an error sending the site " + err);
+    });
 });
 
 //APP LISTEN -------------------------------------------------------------
@@ -251,9 +262,9 @@ function registerUserOnDB({ username, password }) {
   return new Promise((res, rej) => {
     db.query(`INSERT INTO users (username, password, register_date) VALUES ("${username}", "${password}", "${nowDate}")`, (err, result) => {
       if (err) {
-        rej("There was an error registering this user");
+        rej(JSON.stringify({ problem: "database", message: "There was an error registering this user" }));
       }
-      res(`The user ${username} has been succesfully registered...`);
+      res(JSON.stringify({ message: `The user ${username} has been succesfully registered...` }));
     })
   })
 }
@@ -312,12 +323,12 @@ function toggleFavoriteTopic(userID, topic) {
       const alreadyHasTopic = favorite_topics.includes(topic);
       favorite_topics = JSON.parse(favorite_topics);
 
-      if(alreadyHasTopic){
+      if (alreadyHasTopic) {
         favorite_topics.splice(favorite_topics.indexOf(topic), 1)
-      }else{
+      } else {
         favorite_topics.push(topic);
       }
-        
+
       db.query(`UPDATE users SET favorite_topics="${JSON.stringify(favorite_topics)}" WHERE id=${userID}`, (err, result) => {
         if (err) {
           rej("Couldnt update the favorite topics after modifying it");
@@ -433,13 +444,20 @@ function updateCommentToDB({ content }, id) {
 //PROFILE
 
 function updateUserInfo(id, info) {
+  info = info.split("\`").join("").split("\"").join("").split("\'").join("");
   return new Promise((res, rej) => {
+    console.log(`UPDATE users SET profile_info="${info}" WHERE id=${id}`);
     db.query(`UPDATE users SET profile_info="${info}" WHERE id=${id}`, (err, result) => {
       if (err) {
-        rej("Couldnt update the profile info");
+        rej(JSON.stringify({
+          message: "Couldnt update the profile info"
+        }));
         return;
       }
-      res("The profile info has been succesfully updated");
+      res(JSON.stringify({
+        message: "The profile info has been succesfully updated",
+        content: info
+      }));
     })
   })
 }
