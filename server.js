@@ -1,20 +1,15 @@
-const options = {
-  host: "localhost",
-  user: "root",
-  password: "maricuchaston",
-  database: "app-db"
-};
 const express = require("express");
 const app = express();
-const mysqlPromise = require("mysql2/promise");
-const mysql = require("mysql2");
-const promiseAdapter = require("express-mysql2-session-promise-adapter");
-const connection = mysqlPromise.createConnection(options);
-const db = mysql.createConnection(options);
-const PORT = null ?? 8000;
+const db = require("./apis/config/database");
 const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
-const sessionStore = new MySQLStore({}, promiseAdapter.default(connection));
+const PORT = null ?? 8000;
+const sessionStore = require("./apis/config/cookie_db_connection");
+
+//Routers
+const profileRouter = require("./apis/components/profile/routes");
+const commentRouter = require("./apis/components/comments/routes");
+const friendsRouter = require("./apis/components/friends/routes");
+
 
 app.use(express.static(`${__dirname}/build`));
 app.use(session({
@@ -28,86 +23,11 @@ app.use(session({
 }))
 app.use(express.json());
 
+//ROUTES
+app.use("/profile", profileRouter);
+app.use("/topics/comment", commentRouter);
+app.use("/friends", friendsRouter);
 
-//PROFILE
-
-app.post("/profile", async (req, res) => {
-  const id = req.session?.userID;
-  if (!id) {
-    res.send({ message: "There is no session for show a profile" })
-  }
-  try {
-    const result = await getUserData(id);
-    res.send(result);
-  } catch (err) {
-    if (err) console.log(err);
-  }
-})
-
-app.put("/profile/info", async (req, res) => {
-  const id = req.session?.userID;
-  if (!id) {
-    res.send({ message: "There is no session for updating this profile info" })
-  }
-  const { info } = req.body;
-  const result = await updateUserInfo(id, info);
-  res.send(result);
-})
-
-//COMMENTS
-
-app.post("/topics/comment/add", async (req, res) => {
-  const id = req.session?.userID;
-  if (!id) {
-    res.send({ message: "There is no session for making a comment" })
-  }
-  const result = await uploadCommentToDB(req.body, id);
-  res.send(result);
-})
-
-app.put("/topics/comment/edit", async (req, res) => {
-  const id = req.session?.userID;
-  if (!id) {
-    res.send({ message: "There is no session for updating the comment" })
-  }
-  const result = await updateCommentToDB(req.body, id);
-  res.send(result);
-})
-
-//FRIENDS
-
-//-------SHOW
-app.post("/friends/all", async (req, res) => {
-  const userID = req.session?.userID;
-  if (!userID) {
-    res.send({ message: "There is no session for show friends" })
-  }
-  let [{ friends }] = await getFriendIDs(userID);
-  friends = JSON.parse(friends);
-  let friendsData = [];
-
-  for (const id of friends) {
-    const result = await getUserData(id);
-    friendsData.push(result);
-  }
-
-  res.send(friendsData);
-})
-
-//-------ADD
-
-app.put("/friends/toggle", async (req, res) => {
-  const userID = req.session?.userID;
-  if (!userID) {
-    res.send({ message: "There is no session for toggling friend" })
-  }
-
-  const { friendID } = req.body;
-
-  const result = await toggleFriend(userID, friendID);
-
-  res.send(result);
-})
 
 //TOPICS
 
@@ -235,23 +155,6 @@ app.post("/register", async (req, res) => {
   }
 })
 
-
-//INDEX GET -------------------------------------------------------------
-
-app.get("*", (req, res) => {
-  res.sendFile(`${__dirname}/build/index.html`,
-    err => {
-      if (err) console.log("There was an error sending the site " + err);
-    });
-});
-
-//APP LISTEN -------------------------------------------------------------
-
-app.listen(PORT, () => {
-  console.log(`Listening to port ${PORT}`)
-});
-
-
 //DB FUNCTIONS
 
 
@@ -353,93 +256,6 @@ function getChildCommentsOf(topic, parent) {
   })
 }
 
-//-------FRIENDS--------------
-
-function getFriendIDs(id) {
-  return new Promise((res, rej) => {
-    db.query(`SELECT friends FROM users WHERE id=${id}`, (err, result) => {
-      if (err) {
-        rej("Couldnt get the friends");
-        return;
-      }
-      res(result);
-    })
-  })
-}
-
-function getUserData(id) {
-  return new Promise((res, rej) => {
-    db.query(`SELECT * FROM users WHERE id=${id}`, (err, result) => {
-      if (err) {
-        rej("Couldnt get the user");
-        return;
-      }
-      const [{ id, username, profile_image, profile_info, favorite_topics }] = result;
-      res({ id, username, profile_image, profile_info, favorite_topics });
-    })
-  })
-}
-
-function toggleFriend(userID, friendID) {
-  return new Promise((res, rej) => {
-    db.query(`SELECT friends FROM users WHERE id=${userID}`, (err, result) => {
-      if (err) {
-        rej("Couldnt find your profile to add the new friend");
-        return;
-      }
-      let [{ friends }] = result;
-      friends = JSON.parse(friends);
-      const alreadyFriends = friends.includes(friendID);
-
-      if (alreadyFriends) {
-        friends.splice(friends.indexOf(friendID), 1);
-        _toggleFriendship(userID, friendID, friends, true);
-        return;
-      }
-
-      friends.push(friendID);
-      _toggleFriendship(userID, friendID, friends, false);
-
-
-      function _toggleFriendship(user, friend, friends, already) {
-        friends = JSON.stringify(friends);
-        db.query(`UPDATE users SET friends="${friends}" WHERE id=${user}`, (err, result) => {
-          if (err) {
-            rej("Couldnt remove friend from the list of friends");
-            return;
-          }
-          res(already ? `Your friend ${friend} has been removed` : `Your new friend ${friend} has been added`);
-        });
-      }
-    })
-  })
-}
-
-//COMMENTS
-
-function uploadCommentToDB({ content, parent, topic }, author) {
-  return new Promise((res, rej) => {
-    db.query(`INSERT INTO comments (content, author, parent, topic) VALUES("${content}", ${author}, ${parent}, ${topic})`, (err, result) => {
-      if (err) {
-        rej("Couldnt upload the comment");
-        return;
-      }
-      res("The comment has been added succesfully");
-    })
-  })
-}
-
-function updateCommentToDB({ content }, id) {
-  return new Promise((res, rej) => {
-    db.query(`UPDATE comments SET content="${content}" WHERE id=${id}`, (err, result) => {
-      if (err) {
-        rej("Couldnt update the comment");
-        return;
-      }
-      res("The comment has been updated succesfully");
-    })
-  })
-}
 
 //PROFILE
 
@@ -461,3 +277,22 @@ function updateUserInfo(id, info) {
     })
   })
 }
+
+
+
+
+
+//INDEX GET -------------------------------------------------------------
+
+app.get("*", (req, res) => {
+  res.sendFile(`${__dirname}/build/index.html`,
+    err => {
+      if (err) console.log("There was an error sending the site " + err);
+    });
+});
+
+//APP LISTEN -------------------------------------------------------------
+
+app.listen(PORT, () => {
+  console.log(`Listening to port ${PORT}`)
+});
