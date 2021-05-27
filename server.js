@@ -6,9 +6,7 @@ const PORT = null ?? 8000;
 const sessionStore = require("./apis/config/cookie_db_connection");
 
 //Routers
-const profileRouter = require("./apis/components/profile/routes");
-const commentRouter = require("./apis/components/comments/routes");
-const friendsRouter = require("./apis/components/friends/routes");
+const apiRouter = require("./apiRouter");
 
 
 app.use(express.static(`${__dirname}/build`));
@@ -25,9 +23,8 @@ app.use(session({
 app.use(express.json());
 
 //ROUTES
-app.use("/profile", profileRouter);
-app.use("/topics/comment", commentRouter);
-app.use("/friends", friendsRouter);
+
+app.use("/api", apiRouter);
 
 
 //TOPICS
