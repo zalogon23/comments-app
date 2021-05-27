@@ -7,6 +7,7 @@ const controller = {
 
     try {
       const result = await services.getUserData(id);
+      console.log(result);
       res.json({ message: "We found the user profile with the id you asked", data: { ...result } });
     } catch (err) {
       if (err) res.json({ error: true, message: "We couldnt find the user with that id" })

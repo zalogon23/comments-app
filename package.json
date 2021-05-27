@@ -2,7 +2,7 @@
   "name": "6-comments",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
     "test": "set NODE_ENV=test && mocha test"

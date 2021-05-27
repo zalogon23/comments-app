@@ -1,20 +1,13 @@
-const db = require("../../config/database");
+const { Users } = require("../../config/sequelize_database");
 const globalServices = require("../../services/globalServices");
 
 const services = {
   getUserData: globalServices.getUserData,
   updateUserInfo: function (id, info) {
     info = info.split("\`").join("").split("\"").join("").split("\'").join("");
-    return new Promise((res, rej) => {
-      db.query(`UPDATE users SET profile_info="${info}" WHERE id=${id}`, (err, result) => {
-        if (err) {
-          rej();
-          return;
-        }
-        res(info);
-        return;
-      })
-    })
+    Users.update({ profile_info: info }, { where: { id } })
+    .then(res => console.log("We updated users info succesfully"))
+    .catch(err => { if(err) console.log("There was an error updating the data...")})
   }
 }
 
