@@ -7,8 +7,7 @@ const controller = {
 
     try {
       const result = await services.getUserData(id);
-      console.log(result);
-      res.json({ message: "We found the user profile with the id you asked", data: { ...result } });
+      res.json({ error: false, message: "We found the user profile with the id you asked", data: { ...result } });
     } catch (err) {
       if (err) res.json({ error: true, message: "We couldnt find the user with that id" })
     }
@@ -16,12 +15,12 @@ const controller = {
 
   updateUserData: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({ message: "There is no session for updating this profile info" });
+    if (!id) res.json({ error: false, message: "There is no session for updating this profile info" });
     
     const { info } = req.body;
     try {
-      const result = await services.updateUserInfo(id, info);
-      res.json({ message: "We updated the user info", data: info });
+      await services.updateUserInfo(id, info);
+      res.json({ error: false, message: "We updated the user info", data: info });
     }
     catch (err) {
       res.json({ error: true, message: "Couldnt update user's profile info" });
