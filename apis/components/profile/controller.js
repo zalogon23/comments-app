@@ -17,8 +17,9 @@ const controller = {
     const id = req.session?.userID;
     if (!id) res.json({ error: false, message: "There is no session for updating this profile info" });
     
-    const { info } = req.body;
+    let { info } = req.body;
     try {
+      info = info.split("\`").join("").split("\"").join("").split("\'").join("");
       await services.updateUserInfo(id, info);
       res.json({ error: false, message: "We updated the user info", data: info });
     }
