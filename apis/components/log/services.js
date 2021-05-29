@@ -4,7 +4,7 @@ const { Users } = require("../../config/sequelize_database");
 
 const services = {
 
-  isUsernameAlreadyOnDB: ({ username }) => Users.findAll({ where: { username } }),
+  isUsernameAlreadyOnDB: ({ username }) => Users.findAll( { attributes: { exclude: [ "password" ] }, where: { username } , raw: true } ),
 
   isUsernamePasswordMatching: ({ username, password }) => Users.findOne({ where: { [Op.and]: { username, password } } , raw: true } ),
 

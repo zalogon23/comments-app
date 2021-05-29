@@ -1,28 +1,21 @@
 const db = require("../../config/database");
+const { Op } = require("sequelize");
+const { Comments } = require("../../config/sequelize_database");
 
 const services = {
-  addCommentDB: function ({ content, parent = null, topic }, author) {
-    return new Promise((res, rej) => {
-      db.query(`INSERT INTO comments (content, author, parent, topic) VALUES("${content}", ${author}, ${parent}, ${topic})`, (err, result) => {
-        if (err) {
-          rej("Couldnt upload the comment");
-          return;
-        }
-        res("The comment has been added succesfully");
-      })
-    })
+  addCommentDB: async ({ content, parent = null, topic }, author) => {
+    const { dataValues } = await Comments.create({ content, author, parent, topic });
+    const { id } = dataValues; 
+    if(parent){
+      let content = await Comments.findAll({ attributes: [ "children" ], where: { id: parent }, raw: true });
+      let [{ children }] = content;
+      children = JSON.parse(children);
+      children.push(id);
+      children = JSON.stringify(children);
+      await Comments.update({ children }, { where: { id: parent } } )
+    }
   },
-  updateCommentDB: function ({ content, id }, authorID) {
-    return new Promise((res, rej) => {
-      db.query(`UPDATE comments SET content="${content}" WHERE id=${id} AND author=${authorID}`, (err, result) => {
-        if (err) {
-          rej("Couldnt update the comment");
-          return;
-        }
-        res("The comment has been updated succesfully");
-      })
-    })
-  }
+  updateCommentDB: ({ content, id }, author) => Comments.update({ content }, { where: { [Op.and]: { id, author } } })
 }
 
 

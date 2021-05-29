@@ -3,7 +3,7 @@ const db = require("../../config/database");
 const controller = require("./controller");
 
 router.get("/", controller.getAllFriendsOf);
-router.put("/toggle", controller.toggleFriendStatus);
+router.put("/", controller.toggleFriendStatus);
 
 
 module.exports = router;
