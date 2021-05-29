@@ -10,6 +10,7 @@ const apiRouter = require("./apiRouter");
 
 
 app.use(express.static(`${__dirname}/build`));
+app.use("/uploads", express.static(`${__dirname}/uploads`));
 app.use(session({
   secret: "algobienpinchelocoyquemao",
   resave: false,

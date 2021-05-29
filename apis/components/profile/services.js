@@ -5,7 +5,9 @@ const services = {
 
   getUserData: globalServices.getUserData,
 
-  updateUserInfo: (id, info) => Users.update({ profile_info: info }, { where: { id } })
+  updateUserInfo: (id, info) => Users.update({ profile_info: info }, { where: { id } }),
+
+  updateAvatarDB: (id, profile_image) => Users.update({ profile_image }, { where: { id } })
   
 }
 

@@ -26,6 +26,19 @@ const controller = {
     catch (err) {
       res.json({ error: true, message: "Couldnt update user's profile info" });
     }
+  },
+
+  updateAvatar: async (req, res) => {
+    const id = req.session?.userID;
+    if (!id) res.json({ error: false, message: "There is no session for updating this avatar" });
+    
+    try {
+      await services.updateAvatarDB(id, req.file.path);
+      res.json({ error: false, message: "We updated the user avatar succesfully" });
+    }
+    catch (err) {
+      res.json({ error: true, message: "Couldnt update user's profile avatar" });
+    }
   }
 }
 
