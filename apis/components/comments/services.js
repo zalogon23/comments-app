@@ -15,7 +15,18 @@ const services = {
       await Comments.update({ children }, { where: { id: parent } } )
     }
   },
-  updateCommentDB: ({ content, id }, author) => Comments.update({ content }, { where: { [Op.and]: { id, author } } })
+  updateCommentDB: ({ content, id }, author) => Comments.update({ content }, { where: { [Op.and]: { id, author } } }),
+  removeCommentDB: async (id, author) => {
+    const parentResult = await Comments.findAll({ attributes: [ "parent" ], where: { id }, raw: true });
+    const [{ parent }] = parentResult;   
+    await Comments.destroy({ where: { [Op.and]: { id, author } } })
+    if(parent === null) return;
+    const childrenResult = await Comments.findAll({ attributes: [ "children" ], where: { id: parent }, raw: true });
+    let [{ children }] = childrenResult;
+    children = JSON.parse(children);
+    children.splice(children.indexOf(id), 1);
+    Comments.update({ children: JSON.stringify(children) }, { where: { id: parent } })
+  } 
 }
 
 

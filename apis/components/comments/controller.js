@@ -25,6 +25,19 @@ const controller = {
         res.json({ error: true, message: "There was a problem updating the comment" });
       }
     }
+  },
+  deleteComment: async (req, res) => {
+    const id = req.session?.userID;
+    if (!id) res.json({error: true, message: "There is no session for deleting the comment" });
+    try{
+      await services.removeCommentDB( req.body.id, id );
+      res.json({ error: false, message: "The comment has been removed succesfully" });
+    }catch(err){
+      if(err){
+        console.log(err);
+        res.json({ error: true, message: "There was a problem trying to remove the comment..." });
+      }
+    }
   }
 }
 
