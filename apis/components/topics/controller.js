@@ -19,7 +19,6 @@ const controller = {
   },
   setFavoriteTopic: async (req, res) => {
     const id = req.session?.userID;
-    
     if (!id) res.json({ error:true, message: "There is no session for un/make this topic your favorite" });
 
     const { topic } = req.body;
@@ -30,6 +29,20 @@ const controller = {
     } catch (err) {
       console.log(err);
       res.json({ error: true, message: "We had a problem trying to update the favorite status of the topic" })
+    }
+  },
+  createTopic: async ( req, res ) => {
+    const id = req.session?.userID;
+    if (!id) res.json({ error:true, message: "There is no session for creating a topic" });
+
+    const { subject, intro } = req.body;
+
+    try{
+      await services.createTopicDB( subject, intro );
+      res.json({ error: false, message: "The topic has been created succesfully" })
+    } catch (err) {
+      console.log(err);
+      res.json({ error: true, message: "We had a problem trying to create the topic" })
     }
   }
 }

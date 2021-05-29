@@ -1,6 +1,6 @@
 const db = require("../../config/database");
 const { Op } = require("sequelize");
-const { Comments, Users } = require("../../config/sequelize_database");
+const { Comments, Users, Topics } = require("../../config/sequelize_database");
 
 const services = {
 
@@ -19,7 +19,9 @@ const services = {
         favorite_topics = JSON.stringify(favorite_topics);
         
         await Users.update({ favorite_topics }, { where: { id } })
-  }
+  },
+
+  createTopicDB: ( subject, intro ) => Topics.create({ subject, intro })
 }
 
 
