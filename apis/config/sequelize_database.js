@@ -69,6 +69,10 @@ const Topics = sequelize.define("topics", {
   votes: {
     type: DataTypes.STRING,
     defaultValue: "[]"
+  }, 
+  author:{
+    type: DataTypes.INTEGER,
+    allowNull: false
   }
 }, { timestamps: false });
 

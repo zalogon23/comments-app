@@ -33,16 +33,28 @@ const controller = {
   },
   createTopic: async ( req, res ) => {
     const id = req.session?.userID;
-    if (!id) res.json({ error:true, message: "There is no session for creating a topic" });
+    if (!id) res.json({ error: true, message: "There is no session for creating a topic" });
 
     const { subject, intro } = req.body;
 
     try{
-      await services.createTopicDB( subject, intro );
+      await services.createTopicDB( id, subject, intro );
       res.json({ error: false, message: "The topic has been created succesfully" })
     } catch (err) {
-      console.log(err);
       res.json({ error: true, message: "We had a problem trying to create the topic" })
+    }
+  },
+  deleteTopic: async ( req, res ) => {
+    const id = req.session?.userID;
+    if (!id) res.json({ error: true, message: "There is no session for removing a topic" });
+
+    const topicID = req.body.id;
+
+    try{
+      await services.deleteTopicDB( id, topicID );
+      res.json({ error: false, message: "The topic has been deleted succesfully" })
+    } catch (err) {
+      res.json({ error: true, message: "We had a problem trying to delete the topic" })
     }
   }
 }

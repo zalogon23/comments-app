@@ -21,7 +21,9 @@ const services = {
         await Users.update({ favorite_topics }, { where: { id } })
   },
 
-  createTopicDB: ( subject, intro ) => Topics.create({ subject, intro })
+  createTopicDB: ( author, subject, intro ) => Topics.create({ author, subject, intro }),
+
+  deleteTopicDB: ( author, id ) => Topics.destroy({ where: { [Op.and]: { author, id } } })
 }
 
 
