@@ -59,7 +59,7 @@ const controller = {
 
     req.session.destroy();
     res.clearCookie("connect.sid");
-    res.send("You logged out")
+    res.json({ error: false, message: "You logged out succesfully" });
   },
   registerUser: async (req, res) => {
     let userData = req.body;
