@@ -17,7 +17,7 @@ const controller = {
     try {
       const listOfResult = await services.isUsernameAlreadyOnDB(userData.username);
       const usernameExist = !!(listOfResult.length);
-      
+
       if (!usernameExist) {
         res.json({ error: true, cause: "username", message: "The username doesnt exist" });
         return;
@@ -33,20 +33,21 @@ const controller = {
 
     try {
       const userDataRaw = await services.isUsernamePasswordMatching(userData);
+
       if (!userDataRaw) {
         res.json({ error: true, cause: "password", message: "The password is wrong" });
         return;
       }
-
       const userDataSecure = { ...userDataRaw, password: "que miras gato de mierda, esto fue escrito por el team de seguridad" };
       req.session.userID = userDataSecure.id;
       
+
       res.json({ error: false, message: "The user logged in succesfully", data: userDataSecure });
 
     } catch (err) {
       if (err) {
         res.json({ error: true, cause: "password", message: "The password is wrong" });
-        console.log("Problem matching the password")
+        console.log(err);
       }
     }
   },
@@ -67,8 +68,8 @@ const controller = {
       res.json({ error: true, cause: "username", message: "The username is too short (min: 5 characters)" });
       return;
     }
-    
-    const isUserRegistered = await services.isUsernameAlreadyOnDB(userData);
+
+    const isUserRegistered = await services.isUsernameAlreadyOnDB(userData.username);
 
     if (!!(isUserRegistered.length)) {
       res.json({ error: true, cause: "username", message: "The username already exists" });
@@ -80,12 +81,14 @@ const controller = {
     }
     try {
       const register_date = new Date().toISOString().slice(0, 10);
-      const result = await services.registerUserOnDB({ ...userData, register_date });
-      res.send(result);
+      await services.registerUserOnDB({ ...userData, register_date });
+      res.json({ error: false, message: "The user has been registered succesfully" });
     }
     catch (err) {
-      res.send(err);
-      console.log(err);
+      if (err) {
+        res.json({ error: true, message: "There was an error registreing the user" });
+        console.log(err);
+      }
     }
   }
 }
