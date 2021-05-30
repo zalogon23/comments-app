@@ -15,7 +15,7 @@ const controller = {
       return;
     }
     try {
-      const listOfResult = await services.isUsernameAlreadyOnDB(userData);
+      const listOfResult = await services.isUsernameAlreadyOnDB(userData.username);
       const usernameExist = !!(listOfResult.length);
       
       if (!usernameExist) {

@@ -5,7 +5,7 @@ const controller = require("./controller");
 
 
 router.get("/", controller.askForUserData);
-router.put("/info", controller.updateUserData);
+router.put("/info", controller.updateUserInfo);
 router.put("/avatar", upload.single("avatar"), controller.updateAvatar);
 
 

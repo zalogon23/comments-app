@@ -3,9 +3,9 @@ const globalServices = require("../../services/globalServices");
 
 const services = {
 
-  getUserData: globalServices.getUserData,
+  getUserDataDB: globalServices.getUserData,
 
-  updateUserInfo: (id, info) => Users.update({ profile_info: info }, { where: { id } }),
+  updateUserInfoDB: (id, info) => Users.update({ profile_info: info }, { where: { id } }),
 
   updateAvatarDB: (id, profile_image) => Users.update({ profile_image }, { where: { id } })
   
