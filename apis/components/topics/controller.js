@@ -6,7 +6,7 @@ const controller = {
     const id = req.session?.userID;
     if (!id) res.json({ error: true, message: "There is no session for un/make this topic your favorite" });
 
-    const { topic } = req.body;
+    const topic = req.body.id;
 
     try {
       await services.toggleFavoriteTopic(id, topic);
@@ -33,10 +33,10 @@ const controller = {
     const id = req.session?.userID;
     if (!id) res.json({ error: true, message: "There is no session for removing a topic" });
 
-    const topicID = req.body.id;
+    const topic = req.body.id;
 
     try {
-      await services.deleteTopicDB(id, topicID);
+      await services.deleteTopicDB(id, topic);
       res.json({ error: false, message: "The topic has been deleted succesfully" })
     } catch (err) {
       res.json({ error: true, message: "We had a problem trying to delete the topic" })
