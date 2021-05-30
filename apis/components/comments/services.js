@@ -3,6 +3,8 @@ const { Op } = require("sequelize");
 const { Comments } = require("../../config/sequelize_database");
 
 const services = {
+  getChildCommentsOf: parent => Comments.findAll({ where: { parent }, raw: true }),
+  
   addCommentDB: async ({ content, parent = null, topic }, author) => {
     const { dataValues } = await Comments.create({ content, author, parent, topic });
     const { id } = dataValues; 

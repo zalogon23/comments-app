@@ -1,25 +1,10 @@
 const services = require("./services");
 
 const controller = {
-  getTopicSubComments: async (req, res) => {
-    //GET children comment of a COMMENT
-    const { parent } = req.params;
-    try {
-      const result = await services.getChildCommentsOf(parent);
-      if (result.length) {
-        res.json(result);
-      }else{
-        throw new Error();
-      }
-    } catch (err) {
-      if (err) {
-        res.json({ error: true, message: "The comment hasnt child or doesnt exist" })
-      }
-    }
-  },
+
   setFavoriteTopic: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({ error:true, message: "There is no session for un/make this topic your favorite" });
+    if (!id) res.json({ error: true, message: "There is no session for un/make this topic your favorite" });
 
     const { topic } = req.body;
 
@@ -31,31 +16,45 @@ const controller = {
       res.json({ error: true, message: "We had a problem trying to update the favorite status of the topic" })
     }
   },
-  createTopic: async ( req, res ) => {
+  createTopic: async (req, res) => {
     const id = req.session?.userID;
     if (!id) res.json({ error: true, message: "There is no session for creating a topic" });
 
     const { subject, intro } = req.body;
 
-    try{
-      await services.createTopicDB( id, subject, intro );
+    try {
+      await services.createTopicDB(id, subject, intro);
       res.json({ error: false, message: "The topic has been created succesfully" })
     } catch (err) {
       res.json({ error: true, message: "We had a problem trying to create the topic" })
     }
   },
-  deleteTopic: async ( req, res ) => {
+  deleteTopic: async (req, res) => {
     const id = req.session?.userID;
     if (!id) res.json({ error: true, message: "There is no session for removing a topic" });
 
     const topicID = req.body.id;
 
-    try{
-      await services.deleteTopicDB( id, topicID );
+    try {
+      await services.deleteTopicDB(id, topicID);
       res.json({ error: false, message: "The topic has been deleted succesfully" })
     } catch (err) {
       res.json({ error: true, message: "We had a problem trying to delete the topic" })
     }
+  },
+  getTopic: async (req, res) => {
+    const topicId = req.params.id;
+    let topicData;
+    let mainComments;
+    try {
+      [topicData] = await services.getTopicData(topicId);
+      mainComments = await services.getMainComments(topicId);
+    }
+    catch (err) {
+      if (err) res.json({ error: true, message: "There was a problem finding the topic" })
+    }
+
+    res.json({ error: false, message: "The topic was found succesfully", topic: topicData ?? false, comments: mainComments ?? [] });
   }
 }
 

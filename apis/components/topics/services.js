@@ -4,8 +4,6 @@ const { Comments, Users, Topics } = require("../../config/sequelize_database");
 
 const services = {
 
-  getChildCommentsOf: parent => Comments.findAll({ where: { parent }, raw: true }),
-
   toggleFavoriteTopic: async (id, topic) => {
         let { favorite_topics } = await Users.findOne({ attributes: [ "favorite_topics" ], where: { id }, raw: true });
         const alreadyHasTopic = favorite_topics.includes(topic);
@@ -23,7 +21,12 @@ const services = {
 
   createTopicDB: ( author, subject, intro ) => Topics.create({ author, subject, intro }),
 
-  deleteTopicDB: ( author, id ) => Topics.destroy({ where: { [Op.and]: { author, id } } })
+  deleteTopicDB: ( author, id ) => Topics.destroy({ where: { [Op.and]: { author, id } } }),
+  
+  getTopicData: id => Topics.findAll({ where: { id }, raw: true }),
+  
+  getMainComments: topic => Comments.findAll({ where: { [Op.and]: { topic, parent:null } }, raw: true })
+  
 }
 
 

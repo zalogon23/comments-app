@@ -1,9 +1,24 @@
 const services = require("./services");
 
 const controller = {
+  getTopicSubComments: async (req, res) => {
+    const { parent } = req.params;
+    try {
+      const result = await services.getChildCommentsOf(parent);
+      if (result.length) {
+        res.json(result);
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      if (err) {
+        res.json({ error: true, message: "The comment hasnt child or doesnt exist" })
+      }
+    }
+  },
   addComment: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({error: true,  message: "There is no session for making a comment" });
+    if (!id) res.json({ error: true, message: "There is no session for making a comment" });
 
     try {
       await services.addCommentDB(req.body, id);
@@ -16,24 +31,24 @@ const controller = {
   },
   editComment: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({error: true, message: "There is no session for updating the comment" });
-    try{
+    if (!id) res.json({ error: true, message: "There is no session for updating the comment" });
+    try {
       await services.updateCommentDB(req.body, id);
       res.json({ error: false, message: "The comment has been updated succesfully" });
-    }catch(err){
-      if(err){
+    } catch (err) {
+      if (err) {
         res.json({ error: true, message: "There was a problem updating the comment" });
       }
     }
   },
   deleteComment: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({error: true, message: "There is no session for deleting the comment" });
-    try{
-      await services.removeCommentDB( req.body.id, id );
+    if (!id) res.json({ error: true, message: "There is no session for deleting the comment" });
+    try {
+      await services.removeCommentDB(req.body.id, id);
       res.json({ error: false, message: "The comment has been removed succesfully" });
-    }catch(err){
-      if(err){
+    } catch (err) {
+      if (err) {
         console.log(err);
         res.json({ error: true, message: "There was a problem trying to remove the comment..." });
       }
