@@ -1,7 +1,4 @@
-const chai = require("chai");
-const chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
-const expect = chai.expect;
+const expect = require("chai").expect;
 const sinon = require("sinon");
 const controller = require("../../apis/components/profile/controller");
 const services = require("../../apis/components/profile/services");

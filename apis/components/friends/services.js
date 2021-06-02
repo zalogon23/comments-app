@@ -4,7 +4,7 @@ const globalServices = require("../../services/globalServices");
 
 const services = {
 
-  getFriendIDs: (id) => Users.findAll({ attributes: ["friends"], where: { id }, raw: true }),
+  getFriendIDs: (id) => Users.findOne({ attributes: ["friends"], where: { id }, raw: true }),
 
   getUserData: globalServices.getUserData,
 

@@ -1,32 +1,36 @@
-const chai = require("chai");
-const chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
 const { Users } = require("../../apis/config/sequelize_database");
-const expect = chai.expect;
+const expect =require("chai").expect;
 const sinon = require("sinon");
 const controller = require("../../apis/components/log/controller");
 const services = require("../../apis/components/log/services");
 
 describe("LOG Controller", () => {
   const sandbox = sinon.createSandbox();
+  const userData = {id:79,votes_topics:"[]",favorite_topics:"[]",friends:"[]",profile_info:"I am new to Comments App, hello!",username:"pedroramirez",profile_image:null,register_date:"2021-06-02"};
 
   afterEach(() => {
     sandbox.restore();
   });
 
   describe("Login", () => {
-    it("should call service Username Match", async () => {
-      const isUsernameAlreadyOnDB = sandbox.spy(services, "isUsernameAlreadyOnDB");
-      await controller.loginUser({ session: {}, body: { username: "pedroramirez", password: "luquitasdelpueblo" } }, { json: () => { } });
+    it("should call service Username DB and Username/Password DB", async () => {
+      const isUsernameAlreadyOnDB = sandbox.stub(services, "isUsernameAlreadyOnDB").withArgs("pedroramirez").returns(userData);     
+      const isUsernamePasswordMatching = sandbox.stub(services, "isUsernamePasswordMatching").withArgs({ username: "pedroramirez", password: "boludez" }).returns(userData);
+      await controller.loginUser({ session: {}, body: { username: "pedroramirez", password: "boludez" } }, { json: () => { } });
 
       expect(isUsernameAlreadyOnDB.withArgs("pedroramirez").calledOnce).to.be.true;
+      expect(isUsernamePasswordMatching.withArgs({ username: "pedroramirez", password: "boludez" }).calledOnce).to.be.true;
     });
-    it("should call service Password Match", async () => {
-      const isUsernamePasswordMatching = sandbox.spy(services, "isUsernamePasswordMatching");
-      await controller.loginUser({ session: {}, body: { username: "Newby", password: "boludez" } }, { json: () => { } });
+    describe("EXCEPTION", () => {
+      it("should NOT call services Username/Passowrd DB cause the username isn't on DB", async () => {    
+        const isUsernameAlreadyOnDB = sandbox.stub(services, "isUsernameAlreadyOnDB").withArgs("josecarlos").returns(null);     
+        const isUsernamePasswordMatching = sandbox.spy(services, "isUsernamePasswordMatching");
+        await controller.loginUser({ session: {}, body: { username: "josecarlos", password: "boludez" } }, { json: () => { } });
 
-      expect(isUsernamePasswordMatching.withArgs({ username: "Newby", password: "boludez" }).calledOnce).to.be.true;
-    });
+        expect(isUsernameAlreadyOnDB.withArgs("josecarlos").calledOnce).to.be.true;
+        expect(isUsernamePasswordMatching.notCalled).to.be.true;
+      })
+    })
   });
 
   describe("Logout", () => {
@@ -67,15 +71,9 @@ describe("LOG Controller", () => {
   });
 
   describe("Register", () => {
-    it("should call service Username (check if exists)", async () => {
-      const isUsernameAlreadyOnDB = sandbox.spy(services, "isUsernameAlreadyOnDB");
-      await controller.registerUser({ body: { username: "pedroramirez", password: "luquitasdelpueblo" } }, { json: () => { } });
-
-      expect(isUsernameAlreadyOnDB.withArgs("pedroramirez").calledOnce).to.be.true;
-    });
-    it("should call service Register (to add on DB)", async () => {
-      await Users.destroy({ where: { username: "pedroramirez" } });
-      const registerUserOnDB = sandbox.spy(services, "registerUserOnDB");
+    it("should call services Username DB and then call Register DB", async () => {   
+      const isUsernameAlreadyOnDB = sandbox.stub(services, "isUsernameAlreadyOnDB").withArgs("pedroramirez").returns(null);
+      const registerUserOnDB = sandbox.stub(services, "registerUserOnDB");
       await controller.registerUser({ body: { username: "pedroramirez", password: "luquitasdelpueblo" } }, { json: () => { } });
       
       const register_date = new Date().toISOString().slice(0, 10);

@@ -3,11 +3,13 @@ const services = require("./services");
 const controller = {
   getAllFriendsOf: async (req, res) => {
     const userID = req.session?.userID;
-    if (!userID) res.json({ error: true, message: "There is no session for show friends" });
+    if (!userID){ 
+      res.json({ error: true, message: "There is no session for show friends" });
+      return;
+    }
     try {
-      let [{ friends }] = await services.getFriendIDs(userID);
+      let { friends } = await services.getFriendIDs(userID);
       friends = JSON.parse(friends);
-      console.log(friends);
       const friendsData = [];
 
       for (const id of friends) {

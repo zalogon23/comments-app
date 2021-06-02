@@ -15,8 +15,8 @@ const controller = {
       return;
     }
     try {
-      const listOfResult = await services.isUsernameAlreadyOnDB(userData.username);
-      const usernameExist = !!(listOfResult.length);
+      const userDB = await services.isUsernameAlreadyOnDB(userData.username);
+      const usernameExist = !!userDB;
 
       if (!usernameExist) {
         res.json({ error: true, cause: "username", message: "The username doesnt exist" });
@@ -28,6 +28,7 @@ const controller = {
       if (err) {
         console.log("Error with the username")
         res.json({ error: true, cause: "username", message: "The username doesnt exist" });
+        return;
       }
     }
 
@@ -69,9 +70,9 @@ const controller = {
       return;
     }
 
-    const isUserRegistered = await services.isUsernameAlreadyOnDB(userData.username);
+    const userDB = await services.isUsernameAlreadyOnDB(userData.username);
 
-    if (!!(isUserRegistered.length)) {
+    if (!!userDB) {
       res.json({ error: true, cause: "username", message: "The username already exists" });
       return;
     }
