@@ -17,24 +17,32 @@ const controller = {
         friendsData.push(result);
       }
 
-      res.json(friendsData);
+      res.json({ error: false, message: "Here you got the user friends", data: friendsData });
+      return;
+
     } catch (err) {
       if (err) {
+        console.log(err);
         res.json({ error: true, message: "There was an error getting your friends" })
       }
     }
   },
   toggleFriendStatus: async (req, res) => {
     const userID = req.session?.userID;
-    if (!userID) res.json({ error: true, message: "There is no session for toggling friend" });
+    if (!userID){
+      res.json({ error: true, message: "There is no session for toggling friend" });
+      return;
+    } 
 
     const { id } = req.body;
 
     try {
       await services.toggleFriend(userID, id);
       res.json({ error: false, message: "The friends has been succesfully toggled"});
+      return;
     } catch (err) {
       if(err){
+        console.log(err);
         res.json({ error: true, message: "There was a problem toggling the friend"});
       }
     }

@@ -23,10 +23,9 @@ const controller = {
         return;
       }
 
-
     } catch (err) {
       if (err) {
-        console.log("Error with the username")
+        console.log(err)
         res.json({ error: true, cause: "username", message: "The username doesnt exist" });
         return;
       }
@@ -41,9 +40,8 @@ const controller = {
       }
       const userDataSecure = { ...userDataRaw, password: "que miras gato de mierda, esto fue escrito por el team de seguridad" };
       req.session.userID = userDataSecure.id;
-      
-
       res.json({ error: false, message: "The user logged in succesfully", data: userDataSecure });
+      return;
 
     } catch (err) {
       if (err) {
@@ -70,25 +68,32 @@ const controller = {
       return;
     }
 
-    const userDB = await services.isUsernameAlreadyOnDB(userData.username);
+    try{
+      const userDB = await services.isUsernameAlreadyOnDB(userData.username);
 
-    if (!!userDB) {
-      res.json({ error: true, cause: "username", message: "The username already exists" });
-      return;
-    }
-    if (userData.password.length < 5) {
-      res.json({ error: true, cause: "password", message: "The password is too short (min: 5 characters)" });
+      if (!!userDB) {
+        res.json({ error: true, cause: "username", message: "The username already exists" });
+        return;
+      }
+      if (userData.password.length < 5) {
+        res.json({ error: true, cause: "password", message: "The password is too short (min: 5 characters)" });
+        return;
+      }
+    }catch(err){
+      console.log(err);     
+      res.json({ error: true, cause: "database", message: "There was an error looking for the username on DB" });
       return;
     }
     try {
       const register_date = new Date().toISOString().slice(0, 10);
       await services.registerUserOnDB({ ...userData, register_date });
       res.json({ error: false, message: "The user has been registered succesfully" });
+      return;
     }
     catch (err) {
       if (err) {
-        res.json({ error: true, message: "There was an error registreing the user" });
         console.log(err);
+        res.json({ error: true, message: "There was an error registreing the user" });
       }
     }
   }

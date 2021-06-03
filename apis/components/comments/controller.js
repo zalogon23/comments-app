@@ -12,6 +12,7 @@ const controller = {
       throw new Error();
     } catch (err) {
       if (err) {
+        console.log(err);
         res.json({ error: true, message: "The comment hasnt child or doesnt exist" })
       }
     }
@@ -26,8 +27,10 @@ const controller = {
     try {
       await services.addCommentDB(req.body, id);
       res.json({ error: false, message: "The comment has been added succesfully" });
+      return;
     } catch (err) {
       if (err) {
+        console.log(err);
         res.json({ error: true, message: "There was an error uploading the comment" });
       }
     }
@@ -41,8 +44,10 @@ const controller = {
     try {
       await services.updateCommentDB(req.body, id);
       res.json({ error: false, message: "The comment has been updated succesfully" });
+      return;
     } catch (err) {
       if (err) {
+        console.log(err);
         res.json({ error: true, message: "There was a problem updating the comment" });
       }
     }
@@ -56,6 +61,7 @@ const controller = {
     try {
       await services.removeCommentDB(req.body.id, id);
       res.json({ error: false, message: "The comment has been removed succesfully" });
+      return;
     } catch (err) {
       if (err) {
         console.log(err);
