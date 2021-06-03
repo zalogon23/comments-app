@@ -70,6 +70,18 @@ const controller = {
       console.log(err);
       if (err) res.json({ error: true, message: "There was a problem finding the topic" });
     }
+  },
+  getAllTopics: async (req, res) => {
+    try{
+      const topics = await services.getAllTopicsDB();
+      res.json({ error: false, message: "Here you got all the topics", data: topics });
+      return;
+    }catch(err){
+      if(err){
+        console.log(err);
+        res.json({ error: true, message: "There was an error trying to get the topics" })
+      }
+    }
   }
 }
 

@@ -25,7 +25,19 @@ const services = {
   
   getTopicData: id => Topics.findAll({ where: { id }, raw: true }),
   
-  getMainComments: topic => Comments.findAll({ where: { [Op.and]: { topic, parent:null } }, raw: true })
+  getMainComments: topic => Comments.findAll({ where: { [Op.and]: { topic, parent:null } }, raw: true }),
+
+  getAllTopicsDB: async () => {
+    const topics = await Topics.findAll({ raw: true });
+    const topicsWithAuthor = [];
+    for await (const topic of topics){
+      const authorRaw = await Users.findOne({attributes: ["username"], where: { id: topic.author }, raw: true });
+      const author = authorRaw?.username ?? "Anonimous";
+      topicsWithAuthor.push({ ...topic, author });
+    }
+    
+    return topicsWithAuthor;
+  } 
   
 }
 
