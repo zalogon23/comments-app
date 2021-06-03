@@ -7,9 +7,9 @@ const controller = {
       const result = await services.getChildCommentsOf(parent);
       if (result.length) {
         res.json(result);
-      } else {
-        throw new Error();
+        return
       }
+      throw new Error();
     } catch (err) {
       if (err) {
         res.json({ error: true, message: "The comment hasnt child or doesnt exist" })
@@ -18,7 +18,10 @@ const controller = {
   },
   addComment: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({ error: true, message: "There is no session for making a comment" });
+    if (!id){
+      res.json({ error: true, message: "There is no session for making a comment" });
+      return;
+    }
 
     try {
       await services.addCommentDB(req.body, id);
@@ -31,7 +34,10 @@ const controller = {
   },
   editComment: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({ error: true, message: "There is no session for updating the comment" });
+    if (!id){
+      res.json({ error: true, message: "There is no session for updating the comment" });
+      return;
+    }
     try {
       await services.updateCommentDB(req.body, id);
       res.json({ error: false, message: "The comment has been updated succesfully" });
@@ -43,7 +49,10 @@ const controller = {
   },
   deleteComment: async (req, res) => {
     const id = req.session?.userID;
-    if (!id) res.json({ error: true, message: "There is no session for deleting the comment" });
+    if (!id){
+      res.json({ error: true, message: "There is no session for deleting the comment" }); 
+      return;
+    } 
     try {
       await services.removeCommentDB(req.body.id, id);
       res.json({ error: false, message: "The comment has been removed succesfully" });

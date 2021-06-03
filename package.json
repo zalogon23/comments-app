@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "set NODE_ENV=test && mocha test/unit-tests",
+    "test": "mocha test/unit-tests",
     "testEnd": "set NODE_ENV=test && mocha test/end-to-end"
   },
   "keywords": [],
