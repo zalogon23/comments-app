@@ -30,8 +30,8 @@ const services = {
     const authoredComments = [];
     for await (const comment of comments) {
       const data = await Users.findOne({ attributes: ["username"], where: { id: comment.author }, raw: true });
-      const author = data?.username ?? "Anonimous";
-      authoredComments.push({ ...comment, author });
+      const authorName = data?.username ?? "Anonimous";
+      authoredComments.push({ ...comment, authorName });
     }
     
     return authoredComments;

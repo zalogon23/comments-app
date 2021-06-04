@@ -50,7 +50,7 @@ const controller = {
 
     try {
       await services.updateAvatarDB(id, req.file.path);
-      res.json({ error: false, message: "We updated the user avatar succesfully" });
+      res.json({ error: false, message: "We updated the user avatar succesfully", path: req.file.path });
       return;
     }
     catch (err) {

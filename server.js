@@ -4,7 +4,6 @@ const db = require("./apis/config/database");
 const session = require("express-session");
 const PORT = null ?? 8000;
 const sessionStore = require("./apis/config/cookie_db_connection");
-const controller = require("./apis/components/topics/controller");
 
 //Routers
 const apiRouter = require("./apiRouter");
@@ -24,7 +23,6 @@ app.use(session({
 }))
 app.use(express.json());
 app.use("/api", apiRouter);
-app.get("/topics/:id", controller.getTopic);
 
 
 //INDEX GET 

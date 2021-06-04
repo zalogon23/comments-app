@@ -58,10 +58,10 @@ describe("LOG Controller", () => {
       expect(destroySession.calledOnce).to.be.true;
     });
     describe("EXCEPTION", () => {
-      it("should NOT call its methods WHEN theres no User ID", () => {
+      it("should NOT call its methods WHEN theres no session", () => {
         const destroySession = sandbox.spy(req.session, "destroy");
         const clearCookie = sandbox.spy(res, "clearCookie");
-        req.session.userID = null;
+        req.session = null;
         controller.logoutUser(req, res);
 
         expect(clearCookie.notCalled).to.be.true;
