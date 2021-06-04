@@ -51,8 +51,8 @@ const controller = {
     }
   },
   logoutUser: (req, res) => {
-    const id = req.session?.userID;
-    if (!id) {
+
+    if (!req.session) {
       res.json({ error: true, message: "There is no session for log out" })
       return;
     }
