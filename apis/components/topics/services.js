@@ -1,6 +1,7 @@
 const db = require("../../config/database");
 const { Op } = require("sequelize");
 const { Comments, Users, Topics } = require("../../config/sequelize_database");
+const globalServices = require("../../services/globalServices");
 
 const services = {
 
@@ -25,17 +26,7 @@ const services = {
 
   getTopicData: id => Topics.findAll({ where: { id }, raw: true }),
 
-  getMainComments: async topic => {
-    let comments = await Comments.findAll({ where: { [Op.and]: { topic, parent: null } }, raw: true });
-    const authoredComments = [];
-    for await (const comment of comments) {
-      const data = await Users.findOne({ attributes: ["username"], where: { id: comment.author }, raw: true });
-      const authorName = data?.username ?? "Anonimous";
-      authoredComments.push({ ...comment, authorName });
-    }
-    
-    return authoredComments;
-  },
+  getCommentsWithParent: globalServices.getCommentsWithParent,
 
   getAllTopicsDB: async () => {
     const topics = await Topics.findAll({ raw: true });
