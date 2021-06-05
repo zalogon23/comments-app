@@ -14,7 +14,13 @@ const globalServices = {
     })
   },
   getCommentsWithParent: async ( topic, parent ) => {
-    let comments = await Comments.findAll({ where: { [Op.and]: { topic, parent } }, raw: true });
+    let comments;
+    if(topic){
+      comments = await Comments.findAll({ where: { [Op.and]: { topic, parent } }, raw: true });
+    }else{
+      comments = await Comments.findAll({ where: { parent }, raw: true });
+    }
+  
     const authoredComments = [];
     for await (const comment of comments) {
       const data = await Users.findOne({ attributes: ["username"], where: { id: comment.author }, raw: true });

@@ -4,7 +4,7 @@ const controller = {
   getCommentChildren: async (req, res) => {
     const { parent } = req.params;
     try {
-      const result = await services.getChildCommentsOf(parent);
+      const result = await services.getChildCommentsOf(false, parent);
       if (result.length) {
         res.json(result);
         return
