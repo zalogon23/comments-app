@@ -1,7 +1,7 @@
 const services = require("./services");
 
 const controller = {
-  getTopicSubComments: async (req, res) => {
+  getCommentChildren: async (req, res) => {
     const { parent } = req.params;
     try {
       const result = await services.getChildCommentsOf(parent);
@@ -25,8 +25,8 @@ const controller = {
     }
 
     try {
-      await services.addCommentDB(req.body, id);
-      res.json({ error: false, message: "The comment has been added succesfully" });
+      const result = await services.addCommentDB(req.body, id);
+      res.json({ error: false, message: "The comment has been added succesfully", data: result });
       return;
     } catch (err) {
       if (err) {

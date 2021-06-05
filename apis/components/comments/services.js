@@ -16,6 +16,7 @@ const services = {
       children = JSON.stringify(children);
       await Comments.update({ children }, { where: { id: parent } } )
     }
+    return dataValues;
   },
   updateCommentDB: ({ content, id }, author) => Comments.update({ content }, { where: { [Op.and]: { id, author } } }),
   removeCommentDB: async (id, author) => {
