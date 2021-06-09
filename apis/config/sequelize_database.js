@@ -1,16 +1,20 @@
 const { Sequelize, DataTypes, Op } = require("sequelize");
-const options = require("./database_options");
+const options = {
+  host: "localhost",
+  user: "postgres",
+  password: "maricuchaston",
+  database: "comment-app"
+};
 
 const sequelize = new Sequelize(options.database, options.user, options.password, {
   host: options.host,
-  dialect: "mysql",
+  dialect: "postgres",
   define: {
     freezeTableName: true
   },
   logging: false
 })
 
-sequelize.authenticate().then().catch();
 
 const Users = sequelize.define("users", {
   id: {
@@ -44,7 +48,7 @@ const Users = sequelize.define("users", {
   },
   profile_image: {
     type: DataTypes.STRING,
-    defaultValue: null
+    defaultValue: "/uploads/default.png"
   },
   register_date: {
     type: DataTypes.DATE,
@@ -69,8 +73,8 @@ const Topics = sequelize.define("topics", {
   votes: {
     type: DataTypes.STRING,
     defaultValue: "[]"
-  }, 
-  author:{
+  },
+  author: {
     type: DataTypes.INTEGER,
     allowNull: false
   }
@@ -86,7 +90,7 @@ const Comments = sequelize.define("comments", {
     type: DataTypes.STRING,
     allowNull: false
   },
-  parent:{
+  parent: {
     type: DataTypes.INTEGER,
     defaultValue: null
   },
@@ -94,18 +98,20 @@ const Comments = sequelize.define("comments", {
     type: DataTypes.STRING,
     defaultValue: "[]"
   },
-  author:{
+  author: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  topic:{
+  topic: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  image:{
+  image: {
     type: DataTypes.STRING,
     defaultValue: null
   }
 }, { timestamps: false });
 
-module.exports = { Users, Topics, Comments };
+sequelize.sync();
+
+module.exports = { Users, Topics, Comments, sequelize };

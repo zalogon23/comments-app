@@ -1,10 +1,7 @@
-const mysqlPromise = require("mysql2/promise");
-const promiseAdapter = require("express-mysql2-session-promise-adapter");
-const options = require("./database_options");
 const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
+const { sequelize } = require("./sequelize_database");
+const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
-const connection = mysqlPromise.createConnection(options);
-const sessionStore = new MySQLStore({}, promiseAdapter.default(connection));
+const sessionStore = new SequelizeStore({ db: sequelize });
 
 module.exports = sessionStore;

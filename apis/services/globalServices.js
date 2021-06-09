@@ -1,5 +1,4 @@
 const { Op } = require("sequelize");
-const db = require("../config/database");
 const { Users, Comments } = require("../config/sequelize_database"); 
 
 const globalServices = {
