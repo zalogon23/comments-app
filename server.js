@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const db = require("./apis/config/database");
 const session = require("express-session");
 const PORT = null ?? 8000;
 const sessionStore = require("./apis/config/cookie_db_connection");

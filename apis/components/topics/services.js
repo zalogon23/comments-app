@@ -1,4 +1,3 @@
-const db = require("../../config/database");
 const { Op } = require("sequelize");
 const { Comments, Users, Topics } = require("../../config/sequelize_database");
 const globalServices = require("../../services/globalServices");
@@ -33,8 +32,8 @@ const services = {
     const topicsWithAuthor = [];
     for await (const topic of topics) {
       const authorRaw = await Users.findOne({ attributes: ["username"], where: { id: topic.author }, raw: true });
-      const author = authorRaw?.username ?? "Anonimous";
-      topicsWithAuthor.push({ ...topic, author });
+      const authorName = authorRaw?.username ?? "Anonimous";
+      topicsWithAuthor.push({ ...topic, authorName });
     }
 
     return topicsWithAuthor;
