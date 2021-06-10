@@ -42,6 +42,7 @@ const controller = {
 
   updateAvatar: async (req, res) => {
     const id = req.session?.userID;
+    console.log("NOW WEVE RECEIVED THE FUCKING IMAGE !!!!!!!!!!!!!!!!!! " + req.file.path);
     
     if (!id) {
       res.json({ error: true, message: "There is no session for updating this avatar" })

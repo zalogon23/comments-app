@@ -6,14 +6,31 @@ const options = {
   database: "comment-app"
 };
 
-const sequelize = new Sequelize(options.database, options.user, options.password, {
-  host: options.host,
-  dialect: "postgres",
-  define: {
-    freezeTableName: true
-  },
-  logging: false
-})
+let sequelize;
+if(process.env.DATABASE_URL){
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: "postgres",
+    protocol: "postgres",
+    define: {
+      freezeTableName: true
+    },
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
+  })
+}else{
+  sequelize = new Sequelize(options.database, options.user, options.password, {
+    host: options.host,
+    dialect: "postgres",
+    define: {
+      freezeTableName: true
+    },
+    logging: false
+  })
+}
 
 
 const Users = sequelize.define("users", {
