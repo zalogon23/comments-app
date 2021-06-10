@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const session = require("express-session");
-const PORT = null ?? 8000;
+const PORT = process.env.PORT ?? 8000;
 const sessionStore = require("./apis/config/cookie_db_connection");
 
 //Routers
