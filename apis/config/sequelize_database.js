@@ -48,7 +48,7 @@ const Users = sequelize.define("users", {
   },
   profile_image: {
     type: DataTypes.STRING,
-    defaultValue: "/uploads/default.png"
+    defaultValue: "uploads/default.png"
   },
   register_date: {
     type: DataTypes.DATE,
