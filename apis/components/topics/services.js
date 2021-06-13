@@ -37,6 +37,19 @@ const services = {
     }
 
     return topicsWithAuthor;
+  },
+
+  getSearchedTopicsDB: async (search) => {
+    console.log("Esto me esta llegando!!!!:  " + search);
+    const topics = await Topics.findAll({where: { subject:{ [Op.like]: `${search}%` } }, raw: true });
+    const topicsWithAuthor = [];
+    for await (const topic of topics) {
+      const authorRaw = await Users.findOne({ attributes: ["username"], where: { id: topic.author }, raw: true });
+      const authorName = authorRaw?.username ?? "Anonimous";
+      topicsWithAuthor.push({ ...topic, authorName });
+    }
+
+    return topicsWithAuthor;
   }
 
 }

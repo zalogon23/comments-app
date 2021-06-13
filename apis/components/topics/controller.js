@@ -27,7 +27,8 @@ const controller = {
        return;
     }
 
-    const { subject, intro } = req.body;
+    let { subject, intro } = req.body;
+    subject = subject.toLowerCase();
 
     try {
       await services.createTopicDB(id, subject, intro);
@@ -75,6 +76,19 @@ const controller = {
     try{
       const topics = await services.getAllTopicsDB();
       res.json({ error: false, message: "Here you got all the topics", data: topics });
+      return;
+    }catch(err){
+      if(err){
+        console.log(err);
+        res.json({ error: true, message: "There was an error trying to get the topics" })
+      }
+    }
+  },
+  getSearchedTopics: async (req, res) => {
+    try{
+      if(!(req.params.search)) throw new Error();
+      const topics = await services.getSearchedTopicsDB(req.params.search.toLowerCase());
+      res.json({ error: false, message: "Here you got the searched topics", data: topics });
       return;
     }catch(err){
       if(err){
