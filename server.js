@@ -1,7 +1,11 @@
+if(process.env.NODE_ENV !== "production"){
+  require("dotenv").config();
+}
+
 const express = require("express");
 const app = express();
 const session = require("express-session");
-const PORT = process.env.PORT ?? 8000;
+const PORT = process.env.PORT;
 const sessionStore = require("./apis/config/cookie_db_connection");
 
 //Routers
@@ -11,7 +15,7 @@ const apiRouter = require("./apiRouter");
 app.use(express.static(`${__dirname}/build`));
 app.use("/uploads", express.static(`${__dirname}/uploads`));
 app.use(session({
-  secret: "algobienpinchelocoyquemao",
+  secret: process.env.EXPRESS_SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: sessionStore,

@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes, Op } = require("sequelize");
+
 const options = {
   host: "localhost",
   user: "postgres",
