@@ -79,6 +79,10 @@ const controller = {
         res.json({ error: true, cause: "password", message: "The password is too short (min: 5 characters)" });
         return;
       }
+      if (!validEmail(userData.email)) {
+        res.json({ error: true, cause: "email", message: "The email is not valid" });
+        return;
+      }
     }catch(err){
       console.log(err);     
       res.json({ error: true, cause: "database", message: "There was an error looking for the username on DB" });
@@ -97,6 +101,19 @@ const controller = {
       }
     }
   }
+}
+function validEmail(email){
+  let valid = false;
+  const validEmails = [
+    "@gmail.com", "@yahoo.com", "@hotmail.com", "@live.com"
+  ];
+  for (const validEmail of validEmails){
+    if(email.indexOf(validEmail) !== -1){
+      valid = true;
+      break;
+    }
+  }
+  return valid;
 }
 
 module.exports = controller;

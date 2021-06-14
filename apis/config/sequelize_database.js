@@ -60,6 +60,10 @@ const Users = sequelize.define("users", {
     type: DataTypes.STRING,
     allowNull: false
   },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   password: {
     type: DataTypes.STRING,
     allowNull: false
@@ -67,6 +71,10 @@ const Users = sequelize.define("users", {
   profile_image: {
     type: DataTypes.STRING,
     defaultValue: "uploads/default.png"
+  },
+  resetKey: {
+    type: DataTypes.STRING,
+    defaultValue: null
   },
   register_date: {
     type: DataTypes.DATE,

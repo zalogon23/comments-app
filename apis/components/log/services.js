@@ -7,7 +7,7 @@ const services = {
 
   isUsernamePasswordMatching: ({ username, password }) => Users.findOne({ where: { [Op.and]: { username, password } } , raw: true } ),
 
-  registerUserOnDB: ({ username, password, register_date }) => Users.create({ username, password, register_date })
+  registerUserOnDB: ({ username, password, email, register_date }) => Users.create({ username, password, email, register_date })
 
 }
 
