@@ -9,26 +9,26 @@ const services = {
 
   toggleFriend: async (userID, friendID) => {
 
-    const contentUser = await Users.findAll({ attributes: ["friends"], where: { id: userID } });
-    let [{ friends }] = contentUser;
-    const contentFriend = await Users.findAll({ attributes: ["friends"], where: { id: userID } });
-    let friendsFriend = contentFriend[0].friends;
+    const contentUser = await Users.findOne({ attributes: ["friends"], where: { id: userID }, raw: true });
+    let { friends } = contentUser;
+    const contentFriend = await Users.findOne({ attributes: ["friends"], where: { id: friendID }, raw: true });
+    let friendFriends = contentFriend.friends;
     friends = JSON.parse(friends);
-    friendsFriend = JSON.parse(friendsFriend);
+    friendFriends = JSON.parse(friendFriends);
     const alreadyFriends = friends.includes(friendID);
 
     if (alreadyFriends) {
       friends.splice(friends.indexOf(friendID), 1);
-      friendsFriend.splice(friendsFriend.indexOf(userID), 1);
+      friendFriends.splice(friendFriends.indexOf(userID), 1);
       await _toggleFriendship(userID, friends);
-      await _toggleFriendship(friendID, friendsFriend);
+      await _toggleFriendship(friendID, friendFriends);
       return
     }
 
     friends.push(friendID);
-    friendsFriend.push(userID);
+    friendFriends.push(userID);
     await _toggleFriendship(userID, friends);
-    await _toggleFriendship(friendID, friendsFriend);
+    await _toggleFriendship(friendID, friendFriends);
 
     function _toggleFriendship(id, friends) {
       friends = JSON.stringify(friends);

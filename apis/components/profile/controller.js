@@ -42,6 +42,7 @@ const controller = {
 
   updateAvatar: async (req, res) => {
     const id = req.session?.userID;
+    console.log(req.file);
     console.log("NOW WEVE RECEIVED THE FUCKING IMAGE !!!!!!!!!!!!!!!!!! " + req.file.path);
     
     if (!id) {
