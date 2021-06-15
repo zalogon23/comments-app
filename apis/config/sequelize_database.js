@@ -45,15 +45,15 @@ const Users = sequelize.define("users", {
     defaultValue: "[]"
   },
   favorite_topics: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(3000),
     defaultValue: "[]"
   },
   friends: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(3000),
     defaultValue: "[]"
   },
   profile_info: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     defaultValue: "I am new to Comments App, hello!"
   },
   username: {
@@ -69,11 +69,11 @@ const Users = sequelize.define("users", {
     allowNull: false
   },
   profile_image: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     defaultValue: "uploads/default.png"
   },
   resetKey: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     defaultValue: null
   },
   register_date: {
@@ -93,11 +93,11 @@ const Topics = sequelize.define("topics", {
     allowNull: false
   },
   intro: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     allowNull: false
   },
   votes: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(3000),
     defaultValue: "[]"
   },
   author: {
@@ -113,7 +113,7 @@ const Comments = sequelize.define("comments", {
     autoIncrement: true
   },
   content: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     allowNull: false
   },
   parent: {
@@ -121,7 +121,7 @@ const Comments = sequelize.define("comments", {
     defaultValue: null
   },
   children: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(3000),
     defaultValue: "[]"
   },
   author: {
@@ -133,11 +133,11 @@ const Comments = sequelize.define("comments", {
     allowNull: false
   },
   image: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     defaultValue: null
   }
 }, { timestamps: false });
 
-sequelize.sync();
+sequelize.sync({ force: true });
 
 module.exports = { Users, Topics, Comments, sequelize };
