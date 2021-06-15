@@ -138,6 +138,6 @@ const Comments = sequelize.define("comments", {
   }
 }, { timestamps: false });
 
-sequelize.sync();
+sequelize.sync({ force: true });
 
 module.exports = { Users, Topics, Comments, sequelize };
