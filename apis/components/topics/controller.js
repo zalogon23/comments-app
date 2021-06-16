@@ -20,6 +20,24 @@ const controller = {
       res.json({ error: true, message: "We had a problem trying to update the favorite status of the topic" })
     }
   },
+  updateTopic: async (req, res) => {
+    const author = req.session?.userID;
+    if (!author){
+       res.json({ error: true, message: "There is no session for updating the topic introduction" });
+       return;
+    }
+
+    const { id, content } = req.body;
+    
+    try {
+      await services.updateTopicDB(id, content, author);
+      res.json({ error: false, message: "We updated succesfully the topic's introduction" });
+      return;
+    } catch (err) {
+      console.log(err);
+      res.json({ error: true, message: "We had a problem trying to update the introduction of the topic" })
+    }
+  },
   createTopic: async (req, res) => {
     const id = req.session?.userID;
     if (!id){

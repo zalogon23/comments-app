@@ -23,6 +23,8 @@ const services = {
 
   deleteTopicDB: (author, id) => Topics.destroy({ where: { [Op.and]: { author, id } } }),
 
+  updateTopicDB: (id, content, author) => Topics.update({ intro: content }, { where: { [Op.and] : { id, author } } }),
+
   getTopicData: id => Topics.findAll({ where: { id }, raw: true }),
 
   getCommentsWithParent: globalServices.getCommentsWithParent,
