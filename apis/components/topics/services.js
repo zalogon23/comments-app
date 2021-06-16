@@ -25,7 +25,13 @@ const services = {
 
   updateTopicDB: (id, content, author) => Topics.update({ intro: content }, { where: { [Op.and] : { id, author } } }),
 
-  getTopicData: id => Topics.findAll({ where: { id }, raw: true }),
+  getTopicData: async id => {
+    let topic = await Topics.findOne({ where: { id }, raw: true }).catch(err => { console.log(err); return });
+    const authorRaw = await Users.findOne({ attributes: ["username"], where: { id: topic.author }, raw: true });
+    const authorName = authorRaw?.username ?? "Anonimous";
+    topic = { ...topic, authorName };
+    return topic
+  },
 
   getCommentsWithParent: globalServices.getCommentsWithParent,
 
