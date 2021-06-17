@@ -80,7 +80,7 @@ const controller = {
     let topicData;
     let mainComments;
     try {
-      [topicData] = await services.getTopicData(topicId);
+      topicData = await services.getTopicData(topicId);
       mainComments = await services.getCommentsWithParent(topicId, null);
       res.json({ error: false, message: "The topic was found succesfully", topic: topicData ?? false, comments: mainComments ?? [] });
       return;
